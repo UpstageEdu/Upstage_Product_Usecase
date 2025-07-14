@@ -1,6 +1,9 @@
 import streamlit as st
+import os
 from .database import db
 from datetime import datetime
+
+API_URL = os.getenv("UPSTAGE_API_URL", "https://api.upstage.ai/v1")
 
 def render_sidebar():
     """사이드바 렌더링 및 세션 관리"""
@@ -8,8 +11,19 @@ def render_sidebar():
     with st.sidebar:
         st.title("📄 Document Assistant")
         
-        # 세션 관리 섹션
+        
         st.markdown("---")
+        st.markdown("### 🔑 API 키")
+        show_key = st.checkbox("🔓 API 키 보이기", value=False)
+        api_key_input = st.text_input(
+            label="API_KEY",
+            value=st.session_state.get("api_key", ""),
+            type="default" if show_key else "password"
+        )
+        st.session_state.api_key = api_key_input
+
+        st.markdown("---")
+        # 세션 관리 섹션
         st.markdown("### 💬 대화 세션")
         
         # 현재 세션 표시

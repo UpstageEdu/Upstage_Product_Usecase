@@ -1,5 +1,5 @@
 import streamlit as st
-from utils.pdf_upload import process_document
+from utils.pdf_upload import process_document, get_upstage_llm_pdf
 from utils.request_rag import initialize_rag_instance
 from utils.request_rag import call_rag_api
 from utils.chat import (
@@ -8,7 +8,8 @@ from utils.chat import (
     document_based_qa_with_memory, 
     stream_chat_response_with_memory,
     get_rag_tools,
-    process_rag_response
+    process_rag_response,
+    get_upstage_llm_chat
 )
 from utils.sidebar import render_sidebar, save_message_to_db, save_document_to_db, load_session_data
 import requests
@@ -16,6 +17,9 @@ import json
 import time
 import os
 from dotenv import load_dotenv
+
+
+
 
 # 환경 변수 로드
 load_dotenv()
@@ -53,12 +57,8 @@ if "current_session_id" in st.session_state:
         load_session_data(st.session_state.current_session_id)
 
 # API 설정
-API_KEY = os.getenv("UPSTAGE_API_KEY")
+API_KEY = st.session_state.get("api_key") or os.getenv("UPSTAGE_API_KEY")
 API_URL = os.getenv("UPSTAGE_API_URL", "https://api.upstage.ai/v1")
-
-if not API_KEY:
-    st.error("UPSTAGE_API_KEY 환경 변수가 설정되지 않았습니다.")
-    st.stop()
 
 def main():
     st.title("🤖 AI Document Assistant")
@@ -167,6 +167,10 @@ def main():
 
     # 메시지 처리 - 폼이 제출되었을 때 실행
     if submitted:
+        current_api_key = st.session_state.get("api_key") or os.getenv("UPSTAGE_API_KEY")
+        if not current_api_key:
+            st.error("🔑 API 키가 입력되지 않았습니다. 사이드바에서 UPSTAGE API 키를 입력해주세요.")
+            st.stop()
         # 케이스 판단
         has_pdf = uploaded_file is not None
         has_text = user_input is not None and user_input.strip() != ""
@@ -504,7 +508,7 @@ def summarize_document_content(content):
         response = requests.post(
             f"{API_URL}/chat/completions",
             headers={
-                "Authorization": f"Bearer {API_KEY}",
+                "Authorization": f"Bearer {st.session_state.get('api_key') or os.getenv('UPSTAGE_API_KEY')}",
                 "Content-Type": "application/json"
             },
             json={

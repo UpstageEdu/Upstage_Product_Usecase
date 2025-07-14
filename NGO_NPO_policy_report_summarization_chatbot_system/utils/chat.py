@@ -5,12 +5,22 @@ from .database import db
 from .request_rag import call_rag_api
 import requests
 from typing import Dict, List, Optional, Union, Generator
+import streamlit as st
 
 load_dotenv()
 
 # 환경 변수에서 API 키 가져오기
-API_KEY = os.getenv("UPSTAGE_API_KEY")
+def get_upstage_llm_chat(api_key: str):
+    return ChatUpstage(
+        api_key=api_key,
+        model="solar-pro2-preview"
+    )
+
 API_URL = "https://api.upstage.ai/v1/chat/completions"
+
+def get_api_key():
+    """세션 상태에서 API 키를 가져오는 함수"""
+    return st.session_state.get("api_key") or os.getenv("UPSTAGE_API_KEY")
 
 def chat_with_upstage(messages, model="solar-pro2-preview", stream=False, reasoning_effort="medium"):
     """
@@ -29,7 +39,7 @@ def chat_with_upstage(messages, model="solar-pro2-preview", stream=False, reason
         response = requests.post(
             API_URL,
             headers={
-                "Authorization": f"Bearer {API_KEY}",
+                "Authorization": f"Bearer {get_api_key()}",
                 "Content-Type": "application/json"
             },
             json={
@@ -243,7 +253,7 @@ RAG가 필요한지 여부를 'yes' 또는 'no'로만 답변해주세요."""
         response = requests.post(
             API_URL,
             headers={
-                "Authorization": f"Bearer {API_KEY}",
+                "Authorization": f"Bearer {get_api_key()}",
                 "Content-Type": "application/json"
             },
             json={
@@ -346,7 +356,7 @@ def get_chat_response(
         response = requests.post(
             API_URL,
             headers={
-                "Authorization": f"Bearer {API_KEY}",
+                "Authorization": f"Bearer {get_api_key()}",
                 "Content-Type": "application/json"
             },
             json={
@@ -390,7 +400,7 @@ def summarize_content(content: str) -> str:
         response = requests.post(
             API_URL,
             headers={
-                "Authorization": f"Bearer {API_KEY}",
+                "Authorization": f"Bearer {get_api_key()}",
                 "Content-Type": "application/json"
             },
             json={
@@ -483,7 +493,7 @@ def stream_chat_response_with_memory(
         response = requests.post(
             API_URL,
             headers={
-                "Authorization": f"Bearer {API_KEY}",
+                "Authorization": f"Bearer {get_api_key()}",
                 "Content-Type": "application/json"
             },
             json={
@@ -539,7 +549,7 @@ def summarize_document(content):
         response = requests.post(
             API_URL,
             headers={
-                "Authorization": f"Bearer {API_KEY}",
+                "Authorization": f"Bearer {get_api_key()}",
                 "Content-Type": "application/json"
             },
             json={
@@ -565,7 +575,7 @@ def document_based_qa_with_memory(document_content, user_input, messages, system
             agent_response = requests.post(
                 API_URL,
                 headers={
-                    "Authorization": f"Bearer {API_KEY}",
+                    "Authorization": f"Bearer {get_api_key()}",
                     "Content-Type": "application/json"
                 },
                 json={
@@ -584,7 +594,7 @@ def document_based_qa_with_memory(document_content, user_input, messages, system
                 response = requests.post(
                     API_URL,
                     headers={
-                        "Authorization": f"Bearer {API_KEY}",
+                        "Authorization": f"Bearer {get_api_key()}",
                         "Content-Type": "application/json"
                     },
                     json={
@@ -608,7 +618,7 @@ def document_based_qa_with_memory(document_content, user_input, messages, system
         response = requests.post(
             API_URL,
             headers={
-                "Authorization": f"Bearer {API_KEY}",
+                "Authorization": f"Bearer {get_api_key()}",
                 "Content-Type": "application/json"
             },
             json={
@@ -720,7 +730,7 @@ def summarize_text(text, max_length=100):
         response = requests.post(
             API_URL,
             headers={
-                "Authorization": f"Bearer {API_KEY}",
+                "Authorization": f"Bearer {get_api_key()}",
                 "Content-Type": "application/json"
             },
             json={
@@ -742,7 +752,7 @@ def get_llm_response(system_prompt, user_input):
         response = requests.post(
             API_URL,
             headers={
-                "Authorization": f"Bearer {API_KEY}",
+                "Authorization": f"Bearer {get_api_key()}",
                 "Content-Type": "application/json"
             },
             json={
@@ -764,7 +774,7 @@ def stream_llm_response(system_prompt, user_input):
         response = requests.post(
             API_URL,
             headers={
-                "Authorization": f"Bearer {API_KEY}",
+                "Authorization": f"Bearer {get_api_key()}",
                 "Content-Type": "application/json"
             },
             json={
