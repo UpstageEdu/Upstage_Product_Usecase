@@ -10,18 +10,24 @@ from PyPDF2 import PdfReader, PdfWriter
 from langchain_upstage import ChatUpstage
 load_dotenv()
 
-UPSTAGE_API_KEY = os.getenv("UPSTAGE_API_KEY")
+
+def get_upstage_llm_pdf(api_key: str):
+    return ChatUpstage(
+        api_key=api_key,
+        model="solar-pro2-preview"
+    )
+
+def get_api_key():
+    """세션 상태에서 API 키를 가져오는 함수"""
+    return st.session_state.get("api_key") or os.getenv("UPSTAGE_API_KEY")
 MAX_FILE_SIZE = 20 * 1024 * 1024  # 20MB in bytes
 MAX_PAGES_PER_CHUNK = 90  # Upstage Synchronous API 제한: 100페이지 (안정성을 위해 90페이지로 설정)
 MAX_TOKENS = 30000  # 토큰 제한
 
-upstage_llm = ChatUpstage(
-    api_key=UPSTAGE_API_KEY,
-    model="solar-pro2-preview"
-)
-
 def count_tokens(text: str) -> int:
     """Upstage 모델을 사용하여 텍스트의 토큰 수를 계산합니다."""
+    api_key = get_api_key()
+    upstage_llm = get_upstage_llm_pdf(api_key)
     return upstage_llm.get_num_tokens(text)
 
 def truncate_text_by_tokens(text: str, max_tokens: int) -> tuple[str, int, int]:
@@ -119,7 +125,7 @@ def split_pdf_by_pages(file_bytes, max_size_bytes):
 def process_single_document(file_bytes, force_ocr: bool, chunk_info=None):
     """단일 문서(또는 문서 청크)를 처리합니다."""
     url = "https://api.upstage.ai/v1/document-digitization"
-    headers = {"Authorization": f"Bearer {UPSTAGE_API_KEY}"}
+    headers = {"Authorization": f"Bearer {get_api_key()}"}
     files = {
         "document": ("document.pdf", file_bytes, "application/pdf")
     }
